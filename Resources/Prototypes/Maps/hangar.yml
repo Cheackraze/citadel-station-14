@@ -1,0 +1,26 @@
+﻿- type: gameMap
+  id: Hangar
+  mapName: 'Hangar'
+  mapPath: /Maps/hangar.yml
+  minPlayers: 0
+  maxPlayers: 35
+  stations:
+    Hangar:
+      mapNameTemplate: '{0} Hangar Station {1}'
+      nameGenerator:
+        !type:NanotrasenNameGenerator
+        prefixCreator: '14'
+      overflowJobs:
+        - Passenger
+      availableJobs:
+        Passenger: [ -1, -1 ]
+        Janitor: [ 1, 1 ]
+        HeadOfPersonnel: [ 1, 1 ]
+        StationEngineer: [ 1, 1 ]
+        HeadOfSecurity: [ 1, 1 ]
+        Warden: [ 1, 1 ]
+        TechnicalAssistant: [ -1, -1 ]
+        MedicalIntern: [ -1, -1 ]
+        ServiceWorker: [ -1, -1 ]
+        SecurityCadet: [ -1, -1 ]
+        SalvageSpecialist: [ -1, -1 ]

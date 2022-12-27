@@ -1,0 +1,7 @@
+40k starting cash
+
+Medium sized ships: 90-115k
+Small sized 'starter' ships: 24-38k #leave enough leftover to purchase
+Small sized 'upgrade' ships: 40-55k
+Escape Vehicle: 1-5k #between .5-.95x the difference between the lowest taxi cost. Taxi drivers should be able to turn profit after 2 trips. or, a one way trip is fine for a pod but calling 2 in a shift means you should have purchased a car and sold it
+
