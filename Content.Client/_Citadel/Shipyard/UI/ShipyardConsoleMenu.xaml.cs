@@ -72,15 +72,15 @@ namespace Content.Client.Shipyard.UI
                     search.Length != 0 && prototype.Name.ToLowerInvariant().Contains(search) ||
                     search.Length == 0 && _category != null && prototype.Category.Equals(_category))
                 {
-                    var button = new VesselRow
+                    var vesselEntry = new VesselRow
                     {
                         Vessel = prototype,
                         VesselName = { Text = prototype.Name },
                         Purchase = { ToolTip = prototype.Description },
                         Price = { Text = Loc.GetString("shuttle-console-menu-points-amount", ("amount", prototype.Price.ToString())) },
                     };
-                    button.Purchase.OnPressed += (args) => { OnOrderApproved?.Invoke(args); };
-                    Vessels.AddChild(button);
+                    vesselEntry.Purchase.OnPressed += (args) => { OnOrderApproved?.Invoke(args); };
+                    Vessels.AddChild(vesselEntry);
                 }
             }
         }
