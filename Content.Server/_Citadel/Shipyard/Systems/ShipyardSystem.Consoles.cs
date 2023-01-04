@@ -8,6 +8,7 @@ using Content.Shared.GameTicking;
 using Content.Shared.Shipyard.Events;
 using Content.Shared.Shipyard.BUI;
 using Content.Shared.Shipyard.Prototypes;
+using Content.Shared.Shipyard.Components;
 using Robust.Server.GameObjects;
 using Robust.Shared.Audio;
 using Robust.Shared.Player;

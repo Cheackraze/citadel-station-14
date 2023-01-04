@@ -1,11 +1,12 @@
-using Content.Server.Shipyard.Systems;
+using Content.Shared.Shipyard;
+using Robust.Shared.GameStates;
 
-namespace Content.Server.Shipyard.Components;
+namespace Content.Shared.Shipyard.Components;
 
 /// <summary>
 /// Added to the abstract representation of a person to track its money.
 /// </summary>
-[RegisterComponent, Access(typeof(ShipyardSystem))]
+[RegisterComponent, NetworkedComponent]
 public sealed class ShipyardBankAccountComponent : Component
 {
     [ViewVariables(VVAccess.ReadWrite), DataField("balance")]

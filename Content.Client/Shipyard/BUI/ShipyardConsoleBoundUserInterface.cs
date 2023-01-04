@@ -2,7 +2,7 @@ using Content.Shared.Shipyard;
 using Content.Client.Shipyard.UI;
 using Content.Shared.Shipyard.BUI;
 using Content.Shared.Shipyard.Events;
-using Content.Shared.Shipyard.Prototypes;
+using Content.Shared.Shipyard.Components;
 using Content.Shared.IdentityManagement;
 using Robust.Client.GameObjects;
 using Robust.Client.Player;
@@ -45,11 +45,23 @@ namespace Content.Client.Shipyard.BUI
             else
                 accountName = string.Empty;
 
+            if (localPlayer != null)
+            {
+                entityManager.EnsureComponent<ShipyardBankAccountComponent>(localPlayer.Value, out var bank);
+                Balance = bank.Balance;
+            }
+            else
+            {
+                Balance = 0;
+            }
+
             _menu.OnClose += Close;
 
             _menu.OnOrderApproved += ApproveOrder;
 
+            Name = accountName;
             _menu.OpenCentered();
+
         }
         private void Populate()
         {
@@ -84,9 +96,9 @@ namespace Content.Client.Shipyard.BUI
 
         private void ApproveOrder(ButtonEventArgs args)
         {
-            if (args.Button.Parent?.Parent is not VesselRow row || row.Vessel == null)
+            if (args.Button.Parent?.Parent?.Parent is not VesselRow row || row.Vessel == null)
                 return;
-
+            
             var vesselId = row.Vessel.ID;
             var price = row.Vessel.Price;
             SendMessage(new ShipyardConsolePurchaseMessage(vesselId, price));
