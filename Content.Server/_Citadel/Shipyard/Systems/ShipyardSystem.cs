@@ -50,21 +50,27 @@ namespace Content.Server.Shipyard.Systems
         /// </summary>
         /// <param name="stationUid">The ID of the station to dock the shuttle to</param>
         /// <param name="shuttlePath">The path to the grid file to load. Must be a grid file!</param>
-        public void PurchaseShuttle(EntityUid? stationUid, string shuttlePath)
+        public void PurchaseShuttle(EntityUid? stationUid, string shuttlePath, out ShuttleComponent? vessel)
         {
             if (!TryComp<StationDataComponent>(stationUid, out var stationData) || !TryComp<ShuttleComponent>(AddShuttle(shuttlePath), out var shuttle))
+            {
+                vessel = null;
                 return;
+            }
 
             var targetGrid = _station.GetLargestGrid(stationData);
 
             if (targetGrid == null)
+            {
+                vessel = null;
                 return;
+            }
 
             var price = _pricing.AppraiseGrid(shuttle.Owner, null);
 
             //can do FTLTravel later instead if we want to open that door
             _shuttle.TryFTLDock(shuttle, targetGrid.Value);
-
+            vessel = shuttle;
             _sawmill.Info($"Shuttle {shuttlePath} was purchased at {targetGrid} for {price}");
         }
 
