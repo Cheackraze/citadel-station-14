@@ -1,21 +1,24 @@
 <controls:FancyWindow xmlns="https://spacestation14.io"
                            xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
                            xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
-                           SetSize="600 600"
+                           SetSize="720 600"
                            MinSize="600 600">
     <BoxContainer Orientation="Vertical" Margin="5 0 5 0">
-        <BoxContainer Orientation="Horizontal">
-            <Label Text="{Loc 'cargo-console-menu-account-name-label'}"
-                   StyleClasses="LabelKeyText" />
-            <Label Name="AccountNameLabel"
-                   Text="{Loc 'cargo-console-menu-account-name-none-text'}" />
-        </BoxContainer>
-        <BoxContainer Orientation="Horizontal">
-            <Label Text="{Loc 'cargo-console-menu-points-label'}"
-                   StyleClasses="LabelKeyText" />
-            <Label Name="PriceLabel"
-                   Text="$0" />
-        </BoxContainer>
+        <GridContainer Columns="3" HorizontalExpand="True">
+            <Label Text="{Loc 'id-card-console-window-target-id'}" />
+            <Button Name="TargetIdButton" Access="Public"/>
+            <Label Name="TargetIdLabel" />
+        </GridContainer>
+        <Control MinSize="0 8" />
+        <GridContainer Columns="3" HSeparationOverride="4">
+            <Label Name="FullNameLabel" Text="{Loc 'id-card-console-window-full-name-label'}" />
+            <LineEdit Name="FullNameLineEdit" HorizontalExpand="True" />
+            <Button Name="FullNameSaveButton" Text="{Loc 'id-card-console-window-save-button'}" Disabled="True" />
+
+            <Label Name="JobTitleLabel" Text="{Loc 'id-card-console-window-job-title-label'}" />
+            <LineEdit Name="JobTitleLineEdit" HorizontalExpand="True" />
+            <Button Name="JobTitleSaveButton" Text="{Loc 'id-card-console-window-save-button'}" Disabled="True" />
+        </GridContainer>
         <BoxContainer Orientation="Horizontal">
             <OptionButton Name="Categories"
                           Prefix="{Loc 'cargo-console-menu-categories-label'}"
@@ -35,5 +38,6 @@
             </BoxContainer>
         </ScrollContainer>
         <TextureButton VerticalExpand="True" />
+        <Label Name="BankAccountLabel" />
     </BoxContainer>
 </controls:FancyWindow>

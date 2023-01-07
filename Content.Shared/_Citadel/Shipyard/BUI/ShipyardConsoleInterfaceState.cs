@@ -5,12 +5,22 @@ namespace Content.Shared.Shipyard.BUI;
 [NetSerializable, Serializable]
 public sealed class ShipyardConsoleInterfaceState : BoundUserInterfaceState
 {
-    public string Name;
     public int Balance;
-
-    public ShipyardConsoleInterfaceState(string name, int balance)
+    public readonly bool IsTargetIdPresent;
+    public readonly string TargetIdName;
+    public readonly string? TargetIdFullName;
+    public readonly string? TargetIdJobTitle;
+    public ShipyardConsoleInterfaceState(int balance,
+        bool isTargetIdPresent,
+        string? targetIdFullName,
+        string? targetIdJobTitle,
+        string targetIdName)
     {
-        Name = name;
         Balance = balance;
+        IsTargetIdPresent = isTargetIdPresent;
+        TargetIdFullName = targetIdFullName;
+        TargetIdJobTitle = targetIdJobTitle;
+        TargetIdName = targetIdName;
+
     }
 }

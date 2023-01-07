@@ -1,9 +1,9 @@
-using System;
 using Content.Server.Shuttles.Systems;
 using Content.Server.Shuttles.Components;
 using Content.Server.Station.Components;
 using Content.Server.Cargo.Systems;
 using Content.Server.Station.Systems;
+using Content.Shared.Shipyard;
 using Content.Shared.MobState.Components;
 using Content.Shared.GameTicking;
 using Robust.Server.GameObjects;
@@ -14,7 +14,7 @@ using Robust.Shared.Map.Components;
 namespace Content.Server.Shipyard.Systems
 {
 
-    public sealed partial class ShipyardSystem : EntitySystem
+    public sealed partial class ShipyardSystem : SharedShipyardSystem
     {
         [Dependency] private readonly IMapManager _mapManager = default!;
         [Dependency] private readonly PricingSystem _pricing = default!;
@@ -22,6 +22,7 @@ namespace Content.Server.Shipyard.Systems
         [Dependency] private readonly StationSystem _station = default!;
         [Dependency] private readonly CargoSystem _cargo = default!;
         [Dependency] private readonly MapLoaderSystem _map = default!;
+        [Dependency] private readonly ShipyardConsoleSystem _shipyardConsole = default!;
 
         public MapId? ShipyardMap { get; private set; }
         private float _shuttleIndex;
@@ -31,6 +32,8 @@ namespace Content.Server.Shipyard.Systems
         public override void Initialize()
         {
             _sawmill = Logger.GetSawmill("shipyard");
+
+            _shipyardConsole.InitializeConsole();
             SubscribeLocalEvent<BecomesStationComponent, ComponentStartup>(OnShipyardStartup);
             SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
         }
