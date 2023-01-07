@@ -1,4 +1,3 @@
-using Content.Shared.Shipyard;
 using Content.Client.Shipyard.UI;
 using Content.Client.Shipyard.Components;
 using Content.Shared.Shipyard.BUI;
@@ -10,6 +9,7 @@ using Content.Shared.Containers.ItemSlots;
 using Robust.Client.Player;
 using Robust.Shared.Utility;
 using Robust.Shared.Prototypes;
+using static Content.Shared.Shipyard.Components.SharedShipyardConsoleComponent;
 using static Robust.Client.UserInterface.Controls.BaseButton;
 
 namespace Content.Client.Shipyard.BUI
@@ -58,19 +58,12 @@ namespace Content.Client.Shipyard.BUI
             var spriteSystem = sysManager.GetEntitySystem<SpriteSystem>();
             _menu = new ShipyardConsoleMenu(this, IoCManager.Resolve<IPrototypeManager>(), spriteSystem, accessLevels);
             var description = new FormattedMessage();
-
-
-            if (component != null && component.TargetIdSlot.ID != null)
-            {
-                _menu.TargetIdButton.OnPressed += _ => SendMessage(new ItemSlotButtonPressedEvent(component.TargetIdSlot.ID));
-            }
-            _menu.OnClose += Close;
-
-            _menu.OnOrderApproved += ApproveOrder;
-
             _menu.OpenCentered();
-
+            _menu.OnClose += Close;
+            _menu.OnOrderApproved += ApproveOrder;
+            _menu.TargetIdButton.OnPressed += _ => SendMessage(new ItemSlotButtonPressedEvent(TargetIdCardSlotId));
         }
+
         private void Populate()
         {
             if (_menu == null) return;

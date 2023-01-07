@@ -186,6 +186,7 @@ namespace Content.Server.Shipyard.Systems
             {
                 return;
             }
+
             if (args.Price <= 0)
                 return;
 
@@ -221,15 +222,25 @@ namespace Content.Server.Shipyard.Systems
             PlayConfirmSound(uid, component);
             var newDeed = EnsureComp<ShuttleDeedComponent>(bank.Owner);
             _idCardSystem.TryGetIdCard(newDeed.Owner, out var idCard);
+
             if (idCard != null && TryComp<AccessComponent>(idCard.Owner, out var newCap))
             {
                 //later we will make a custom pilot job, for now they get the captain treatment
                 var newAccess = newCap.Tags.ToList();
                 newAccess.Add($"Captain");
                 _accessSystem.TrySetTags(newCap.Owner, newAccess, newCap);
+
+                ShipyardConsoleInterfaceState newState = new ShipyardConsoleInterfaceState(
+                    bank.Balance,
+                    true,
+                    idCard.FullName,
+                    idCard.JobTitle,
+                    string.Empty);
+
+                _uiSystem.TrySetUiState(component.Owner, ShipyardConsoleUiKey.Shipyard, newState);
             }
 
-            RegisterDeed(newDeed, shuttle);
+            RegisterDeed(newDeed, shuttle);           
         }
 
         private void OnConsoleUIOpened(EntityUid uid, SharedShipyardConsoleComponent component, BoundUIOpenedEvent args)
