@@ -18,6 +18,7 @@ namespace Content.Client.Shipyard.UI
         private IPrototypeManager _protoManager;
         private SpriteSystem _spriteSystem;
         public event Action<ButtonEventArgs>? OnOrderApproved;
+        public event Action<ButtonEventArgs>? OnSellShip;
         private readonly ShipyardConsoleBoundUserInterface _menu;
         private readonly List<string> _categoryStrings = new();
         private string? _category;
@@ -48,6 +49,7 @@ namespace Content.Client.Shipyard.UI
             JobTitleSaveButton.OnPressed += _ => SubmitData();
             SearchBar.OnTextChanged += OnSearchBarTextChanged;
             Categories.OnItemSelected += OnCategoryItemSelected;
+            SellShipButton.OnPressed += (args) => { OnSellShip?.Invoke(args); };
         }
 
         private void OnCategoryItemSelected(OptionButton.ItemSelectedEventArgs args)
@@ -103,7 +105,7 @@ namespace Content.Client.Shipyard.UI
         }
 
         /// <summary>
-        ///     Populates the list of products that will actually be shown, using the current filters.
+        ///     Populates the list categories that will actually be shown, using the current filters.
         /// </summary>
         public void PopulateCategories()
         {
@@ -160,6 +162,13 @@ namespace Content.Client.Shipyard.UI
 
             JobTitleSaveButton.Disabled = !interfaceEnabled || !jobTitleDirty;
             BankAccountLabel.Text = Loc.GetString("cargo-console-menu-points-amount", ("amount", state.Balance.ToString()));
+
+            SellShipButton.Disabled = state.ShipDeedTitle == null;
+            if (state.ShipDeedTitle != null)
+            {
+                DeedTitle.Text = state.ShipDeedTitle;
+            }
+
         }
         private void SubmitData()
         {

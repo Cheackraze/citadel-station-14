@@ -31,7 +31,7 @@ public sealed class SellShuttleCommand : IConsoleCommand
         };
 
         var system = _entityManager.GetEntitySystem<ShipyardSystem>();
-        system.SellShuttle(stationId, shuttleId);
+        system.SellShuttle(stationId, shuttleId, out _);
     }
 
     public CompletionResult GetCompletion(IConsoleShell shell, string[] args)
