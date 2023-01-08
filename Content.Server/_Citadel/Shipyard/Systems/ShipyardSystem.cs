@@ -125,8 +125,10 @@ namespace Content.Server.Shipyard.Systems
         /// </summary>
         /// <param name="stationUid">The ID of the station that the shuttle is docked to</param>
         /// <param name="shuttleUid">The grid ID of the shuttle to be appraised and sold</param>
-        public void SellShuttle(EntityUid stationUid, EntityUid shuttleUid)
+        public void SellShuttle(EntityUid stationUid, EntityUid shuttleUid, out int bill)
         {
+            bill = 0;
+
             if (!TryComp<StationDataComponent>(stationUid, out var stationGrid) || !HasComp<ShuttleComponent>(shuttleUid) || !TryComp<TransformComponent>(shuttleUid, out var xform) || ShipyardMap == null)
                 return;
 
@@ -169,9 +171,11 @@ namespace Content.Server.Shipyard.Systems
             };
 
             //just yeet and delete for now. Might want to split it into another function later to send back to the shipyard map first to pause for something
-            var price = _pricing.AppraiseGrid(shuttleUid);
+            //also superman 3 moment
+            bill = (int) _pricing.AppraiseGrid(shuttleUid);
             _mapManager.DeleteGrid(shuttleUid);
-            _sawmill.Info($"Sold shuttle {shuttleUid} for {price}");
+            _sawmill.Info($"Sold shuttle {shuttleUid} for {bill}");
+            return;
         }
 
         private void CleanupShipyard()

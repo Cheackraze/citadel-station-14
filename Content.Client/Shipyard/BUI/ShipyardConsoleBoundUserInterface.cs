@@ -61,6 +61,7 @@ namespace Content.Client.Shipyard.BUI
             _menu.OpenCentered();
             _menu.OnClose += Close;
             _menu.OnOrderApproved += ApproveOrder;
+            _menu.OnSellShip += SellShip;
             _menu.TargetIdButton.OnPressed += _ => SendMessage(new ItemSlotButtonPressedEvent(TargetIdCardSlotId));
         }
 
@@ -112,15 +113,18 @@ namespace Content.Client.Shipyard.BUI
         }
         private void ApproveOrder(ButtonEventArgs args)
         {
- //           _sawmill.Error($"button is pressed");
             if (args.Button.Parent?.Parent is not VesselRow row || row.Vessel == null)
             {
- //               _sawmill.Error($"button is not a part of a vessel row, somehow");
                 return;
             }
             var vesselId = row.Vessel.ID;
             var price = row.Vessel.Price;
             SendMessage(new ShipyardConsolePurchaseMessage(vesselId, price));
+        }
+        private void SellShip(ButtonEventArgs args)
+        {
+            //reserved for a sanity check, but im not sure what since we checked all the important stuffs on client already
+            SendMessage(new ShipyardConsoleSellMessage());
         }
     }
 }

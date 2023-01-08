@@ -22,7 +22,7 @@ using Content.Shared.Shipyard;
 using System.Linq;
 using Content.Shared.Database;
 using Content.Shared.Roles;
-using System.Xml.Linq;
+using Robust.Shared.Map.Components;
 
 namespace Content.Server.Shipyard.Systems
 {
@@ -37,12 +37,14 @@ namespace Content.Server.Shipyard.Systems
         [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
         [Dependency] private readonly ShipyardSystem _shipyard = default!;
         [Dependency] private readonly StationSystem _station = default!;
+        [Dependency] private readonly IComponentFactory _component = default!;
 
         public void InitializeConsole()
         {
             SubscribeLocalEvent<ShipyardConsoleComponent, EntInsertedIntoContainerMessage>(UpdateConsole);
             SubscribeLocalEvent<ShipyardConsoleComponent, EntRemovedFromContainerMessage>(EmptyConsole);
             SubscribeLocalEvent<ShipyardConsoleComponent, ShipyardConsolePurchaseMessage>(OnPurchaseMessage);
+            SubscribeLocalEvent<ShipyardConsoleComponent, ShipyardConsoleSellMessage>(OnSellMessage);
             SubscribeLocalEvent<ShipyardConsoleComponent, BoundUIOpenedEvent>(OnConsoleUIOpened);
             SubscribeLocalEvent<ShipyardConsoleComponent, ComponentInit>(OnInit);
             SubscribeLocalEvent<ShipyardConsoleComponent, WriteToTargetIdMessage>(UpdateNames);
@@ -70,7 +72,8 @@ namespace Content.Server.Shipyard.Systems
                     false,
                     null,
                     null,
-                    string.Empty);
+                    string.Empty,
+                    null);
             _uiSystem.TrySetUiState(args.Container.Owner, ShipyardConsoleUiKey.Shipyard, newState);
 
         }
@@ -86,7 +89,8 @@ namespace Content.Server.Shipyard.Systems
                     false,
                     null,
                     null,
-                    string.Empty);
+                    string.Empty,
+                    null);
             }
             else
             {
@@ -95,15 +99,23 @@ namespace Content.Server.Shipyard.Systems
                 if (!HasComp<AccessComponent>(args.Entity))
                     return;
 
-                var name = string.Empty;
+                string? deedName = null;
+                if (TryComp<ShuttleDeedComponent>(args.Entity, out var deed) &&
+                    TryComp<MapGridComponent>(deed.ShuttleUid, out var mapGrid) &&
+                    TryComp<MetaDataComponent>(mapGrid.Owner, out var metaData))
+                {
+                    deedName = metaData.EntityName;                    
+                }
 
                 var bank = EnsureComp<ShipyardBankAccountComponent>(args.Entity);
+
                 newState = new ShipyardConsoleInterfaceState(
                     bank.Balance,
                     true,
                     targetIdComponent.FullName,
                     targetIdComponent.JobTitle,
-                    name);
+                    string.Empty,
+                    deedName);
             }
 
             _uiSystem.TrySetUiState(args.Container.Owner, ShipyardConsoleUiKey.Shipyard, newState);
@@ -121,7 +133,8 @@ namespace Content.Server.Shipyard.Systems
                     false,
                     null,
                     null,
-                    string.Empty);
+                    string.Empty,
+                    null);
             }
             else
             {
@@ -144,13 +157,21 @@ namespace Content.Server.Shipyard.Systems
                 _accessSystem.TrySetTags(targetIdEntity, args.AccessList);
 
                 UpdateStationRecord(targetIdEntity, args.FullName, args.JobTitle, string.Empty);
+                string? deedName = null;
+                if (TryComp<ShuttleDeedComponent>(args.Entity, out var deed) &&
+                    TryComp<MapGridComponent>(deed.ShuttleUid, out var mapGrid) &&
+                    TryComp<MetaDataComponent>(mapGrid.Owner, out var metaData))
+                {
+                    deedName = metaData.EntityName;
+                }
                 var bank = EnsureComp<ShipyardBankAccountComponent>(targetIdComponent.Owner);
                 newState = new ShipyardConsoleInterfaceState(
                 bank.Balance,
                 true,
                 targetIdComponent.FullName,
                 targetIdComponent.JobTitle,
-                args.FullName);
+                args.FullName,
+                deedName);
             }
             _uiSystem.TrySetUiState(component.Owner, ShipyardConsoleUiKey.Shipyard, newState);
         }
@@ -230,12 +251,20 @@ namespace Content.Server.Shipyard.Systems
                 newAccess.Add($"Captain");
                 _accessSystem.TrySetTags(newCap.Owner, newAccess, newCap);
 
+                string? deedName = null;
+                if (TryComp<MapGridComponent>(shuttle.Owner, out var mapGrid) &&
+                    TryComp<MetaDataComponent>(mapGrid.Owner, out var metaData))
+                {
+                    deedName = metaData.EntityName;
+                }
+
                 ShipyardConsoleInterfaceState newState = new ShipyardConsoleInterfaceState(
                     bank.Balance,
                     true,
                     idCard.FullName,
                     idCard.JobTitle,
-                    string.Empty);
+                    string.Empty,
+                    deedName);
 
                 _uiSystem.TrySetUiState(component.Owner, ShipyardConsoleUiKey.Shipyard, newState);
             }
@@ -243,6 +272,54 @@ namespace Content.Server.Shipyard.Systems
             RegisterDeed(newDeed, shuttle);           
         }
 
+        public void OnSellMessage(EntityUid uid, SharedShipyardConsoleComponent component, ShipyardConsoleSellMessage args)
+        {
+            
+            if (args.Session.AttachedEntity is not { Valid: true } player)
+            {
+                return;
+            }
+
+            if (component.TargetIdSlot.ContainerSlot == null || component.TargetIdSlot.ContainerSlot.ContainedEntity == null)
+                return;
+
+            var bank = GetBankAccount((EntityUid) component.TargetIdSlot.ContainerSlot.ContainedEntity);
+
+            if (bank == null)
+                return;
+
+            if (!TryComp<ShuttleDeedComponent>(bank.Owner, out var deed) || deed == null || deed.ShuttleUid == null)
+            {
+                ConsolePopup(args.Session, Loc.GetString("shipyard-console-invalid-vessel"));
+                PlayDenySound(uid, component);
+                return;
+            }
+
+            if (!TrySellVessel(bank, deed.ShuttleUid, out var bill))
+            {
+                PlayDenySound(uid, component);
+                return;
+            };
+
+            DeductFunds(bank, -bill);
+            PlayConfirmSound(uid, component);
+            _idCardSystem.TryGetIdCard(bank.Owner, out var idCard);
+
+            if (idCard != null)
+            {
+
+                ShipyardConsoleInterfaceState newState = new ShipyardConsoleInterfaceState(
+                    bank.Balance,
+                    true,
+                    idCard.FullName,
+                    idCard.JobTitle,
+                    string.Empty,
+                    null);
+
+                _uiSystem.TrySetUiState(component.Owner, ShipyardConsoleUiKey.Shipyard, newState);
+                RemComp<ShuttleDeedComponent>(idCard.Owner);
+            };            
+        }
         private void OnConsoleUIOpened(EntityUid uid, SharedShipyardConsoleComponent component, BoundUIOpenedEvent args)
         {
             if (args.Session.AttachedEntity is not { Valid: true } player)
@@ -282,17 +359,35 @@ namespace Content.Server.Shipyard.Systems
 
             return true;
         }
+        public bool TrySellVessel(ShipyardBankAccountComponent component, EntityUid? gridUid, out int bill)
+        {
+            bill = 0;
+            var stationUid = _station.GetOwningStation(component.Owner);
+            if (component == null || gridUid == null || stationUid == null)
+            {
+                return false;
+            };
+
+            _shipyard.SellShuttle((EntityUid) stationUid, (EntityUid) gridUid, out bill);
+
+            if (bill == 0)
+            {
+                return false;
+            };
+
+            return true;
+        }
 
         private void RegisterDeed(ShuttleDeedComponent deed, ShuttleComponent shuttle)
         {
             deed.ShuttleUid = shuttle.Owner;
-            Dirty(deed); //done dirt cheap
+            //Dirty(deed); //done dirt cheap
         }
 
         public void DeductFunds(ShipyardBankAccountComponent component, int amount)
         {
             component.Balance = Math.Max(0, component.Balance - amount);
-            Dirty(component);
+            //Dirty(component);
         }
 
         public ShipyardBankAccountComponent? GetBankAccount(EntityUid uid)

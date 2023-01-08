@@ -1,8 +1,8 @@
 <controls:FancyWindow xmlns="https://spacestation14.io"
                            xmlns:gfx="clr-namespace:Robust.Client.Graphics;assembly=Robust.Client"
                            xmlns:controls="clr-namespace:Content.Client.UserInterface.Controls"
-                           SetSize="720 600"
-                           MinSize="600 600">
+                           SetSize="600 600"
+                           MinSize="520 540">
     <BoxContainer Orientation="Vertical" Margin="5 0 5 0">
         <GridContainer Columns="3" HorizontalExpand="True">
             <Label Text="{Loc 'id-card-console-window-target-id'}" />
@@ -18,6 +18,8 @@
             <Label Name="JobTitleLabel" Text="{Loc 'id-card-console-window-job-title-label'}" />
             <LineEdit Name="JobTitleLineEdit" HorizontalExpand="True" />
             <Button Name="JobTitleSaveButton" Text="{Loc 'id-card-console-window-save-button'}" Disabled="True" />
+
+            <Label Name="BankAccountLabel" />
         </GridContainer>
         <BoxContainer Orientation="Horizontal">
             <OptionButton Name="Categories"
@@ -38,6 +40,12 @@
             </BoxContainer>
         </ScrollContainer>
         <TextureButton VerticalExpand="True" />
-        <Label Name="BankAccountLabel" />
+        <GridContainer Columns="2" HorizontalExpand="True">
+            <Label Name="DeedTitle"
+                Text=""/>
+            <Button Name="SellShipButton"
+                Text="Sell"
+                Disabled="True" />
+        </GridContainer>
     </BoxContainer>
 </controls:FancyWindow>
